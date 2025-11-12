@@ -1,10 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
+require('dotenv').config();
 const app = express();
-// var admin = require("firebase-admin");
-const port = 3000;
+var admin = require("firebase-admin");
+const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
@@ -12,25 +12,37 @@ const logger = (req,res,next)=>{
   console.log('login info')
   next();
 }
-const verifyFirebase = (req,res,next)=>{
+const verifyFirebase = async (req,res,next)=>{
 const token = req.headers.authorization.split(' ')[1]
 // console.log(token)
+
+
 
 if(!token){
   return res.send({message: "error with access"})
 }
+try{
+  const userInfo= await admin.auth().verifyIdToken(token);
+  console.log(userInfo);
+  next();
+}
+catch{
+return res.send({message: "error with access"})
+};
 next();
 }
 
 
 
-// var serviceAccount = require("path/to/serviceAccountKey.json");
+var serviceAccount = require("./admin.json");
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount)
-// });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
-const uri = "mongodb+srv://sifatforpc999:sifatforpc999@server1.qmz0oye.mongodb.net/?appName=server1";
+//  const uri = "mongodb+srv://sifatforpc999:sifatforpc999@server1.qmz0oye.mongodb.net/?appName=server1";
+
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@server1.qmz0oye.mongodb.net/?appName=server1`;
 
 const client = new MongoClient(uri, {
   serverApi: {
