@@ -3,7 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
-var admin = require("firebase-admin");
+// var admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
@@ -21,24 +21,24 @@ const token = req.headers.authorization.split(' ')[1]
 if(!token){
   return res.send({message: "error with access"})
 }
-try{
-  const userInfo= await admin.auth().verifyIdToken(token);
-  console.log(userInfo);
-  next();
-}
-catch{
-return res.send({message: "error with access"})
-};
+// try{
+//   const userInfo= await admin.auth().verifyIdToken(token);
+//   console.log(userInfo);
+//   next();
+// }
+// catch{
+// return res.send({message: "error with access"})
+// };
 next();
 }
 
 
 
-var serviceAccount = require("./admin.json");
+// var serviceAccount = require("./admin.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 //  const uri = "mongodb+srv://sifatforpc999:sifatforpc999@server1.qmz0oye.mongodb.net/?appName=server1";
 
@@ -67,17 +67,18 @@ async function run() {
     app.get('/', (req, res) => {
       res.send('Ping hoise!');
     });
-    // app.get('/testget', async (req, res) => {
-    //   const query = await foodcol1.find().toArray();
-    //   res.send(query);
-    // });
+
+
     app.patch('/request/:id', async (req, res) => {
       const foodid = req.params.id;
 
       const query = { _id: new ObjectId(foodid) }
       const { status,requestername,
              requesterimg,
-               requestedfoodid } = req.body;
+               requestedfoodid,contact,
+reqlocation,
+reqreason,
+reqstatus,} = req.body;
 
       const update = {
         $set: {
@@ -85,12 +86,16 @@ async function run() {
           requestername:requestername,
          requesterimg:requesterimg,
          requestedfoodid:requestedfoodid,
+         requeststatus:reqstatus,
+         reqlocation:reqlocation,
+         reqreason:reqreason,
+         reqcontact:contact
         }
       };
 
-      const updatefood = await foodslist1.updateOne(query, update);
+      const updatefood = await foodcol1.updateOne(query, update);
 
-      const updatedfood = await foodslist1.findOne(query);
+      const updatedfood = await foodcol1.findOne(query);
 
       const finalize = await foodrequests.insertOne(updatedfood);
 
@@ -98,27 +103,179 @@ async function run() {
       // .catch(err=>({message:'we are done'},err))
     });
     app.get('/allfoods', async (req, res) => {
-      const foods = await foodslist1.find().toArray();
+      const foods = await foodcol1.find().toArray();
       res.send(foods)
-    })
+    });
+    app.get('/requestedfoods/:email', async (req, res) => {
+    const contributorEmail = req.params.email;
+
+    if (!contributorEmail) {
+        return res.send({ message: 'The email query parameter is required to search for your requested foods.' });
+    }
+
+    const query = { email: contributorEmail }; 
+
+    try {
+        const requests = await foodrequests.find(query).toArray();
+        
+        res.send(requests);
+    } catch (error) {
+        console.error('Error fetching requested foods by contributor email:', error);
+        res.status(500).send({ message: 'Server error while fetching requests.' });
+    }
+});
+    app.get('/myfoods', async (req, res) => {
+      const useremail = req.query.email;
+
+      if(!useremail){
+        return 'errrrorr'
+      };
+      const query = { email : useremail}
+
+      const food = await foodcol1.find(query).toArray()
+      res.send(food)
+    });
     app.post('/create', async (req, res) => {
       const newfood = req.body;
 
       const result = await foodcol1.insertOne(newfood);
       res.send(result)
-    })
-    app.get('/details/:id',logger,verifyFirebase, async (req, res) => {
-      //data is in foodlist
+    });
+//   app.patch('/testpatch/:id', async (req, res) => {
+
+
+//   try {
+//     const id = req.params.id;
+//     const fupdate = req.body;
+
+//     const query = { _id: new ObjectId(id) };
+
+//     const update = {
+//       $set: {
+//         title: fupdate.changedTitle,
+//         imgurl: fupdate.changedImgurl,
+//         expireDate: fupdate.changedExpireDate,
+//         status: fupdate.changedStatus,
+//         capability: fupdate.changedCapability,
+//         contributor: fupdate.changedContributor,
+//         email: fupdate.changedEmail,
+//         pickupLocation: fupdate.changedPickupLocation,
+//         available: fupdate.changedAvailable
+//       }
+//     };
+
+//     const result = await foodcol1.updateOne(query, update);
+
+//     if (result.modifiedCount > 0) {
+//       res.send({ success: true, message: "Food item updated successfully." });
+//     } else {
+//       res.send({ success: false, message: "No changes made or item not found." });
+//     }
+//   } catch (err) {
+//     console.error("Error updating food item:", err);
+//     res.status(500).send({ success: false, message: "Server error during update." });
+//   }
+// });
+
+
+    //   const result = foodcol1.updateOne(query,update);
+
+    //   res.send(result)
+    // });
+   
+   
+   
+   
+   
+    app.get('/details/:id', async (req, res) => {
       const foodid = req.params.id;
 
       const query = { _id: new ObjectId(foodid) }
 
-      const food = await foodslist1.findOne(query);
+      const food = await foodcol1.findOne(query);
 
       res.send(food)
-    })
+    });
+
+    app.patch('/updatefood/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
+
+    const query = { _id: new ObjectId(id) };
+    const updateDoc = {
+      $set: {
+        title: updatedData.title,
+        imgurl: updatedData.imgurl,
+        capability: updatedData.capability,
+        pickupLocation: updatedData.pickupLocation,
+        expireDate: updatedData.expireDate,
+        description: updatedData.description,
+        contributor: updatedData.contributor,
+        contributorPhotoURL: updatedData.contributorPhotoURL,
+        email: updatedData.email,
+        status: updatedData.status,
+      },
+    };
+
+    const result = await foodcol1.updateOne(query, updateDoc);
+
+    if (result.modifiedCount > 0) {
+      res.send({ success: true, message: "Food updated successfully" });
+    } else {
+      res.send({ success: false, message: "No changes made or food not found" });
+    }
+  } catch (error) {
+    console.error("Error updating food:", error);
+    res.status(500).send({ success: false, message: "Server error while updating food" });
+  }
+});
+app.delete('/deletefood/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+
+    const result = await foodcol1.deleteOne(query);
+
+    if (result.deletedCount > 0) {
+      res.send({ success: true, message: 'Food deleted successfully' });
+    } else {
+      res.send({ success: false, message: 'Food not found' });
+    }
+  } catch (err) {
+    console.error('Error deleting food:', err);
+    res.status(500).send({ success: false, message: 'Server error while deleting food' });
+  }
+});
+
+
+    app.get('/updateinfo/:id', async (req, res) => {
+        const foodid = req.params.id;
+
+        const query = { _id: new ObjectId(foodid) }
+
+        const food = await foodcol1.findOne(query);
+
+        if (!food) {
+            return res.status(404).send({ message: "Food item not found." });
+        }
+
+        res.send(food);
+    });
+    // app.get('/updateinfo',logger,verifyFirebase, async (req, res) => {
+    //   const foodid = req.headers.food;
+
+    //   const query = { _id: new ObjectId(foodid) }
+
+    //   const food = await foodslist1.findOne(query);
+
+    //   res.send(food)
+    // })
+
+
+
     app.get('/presorted', async (req, res) => {
-      const foodsorted = await foodslist1.find().sort({ "capability": -1 }).toArray();
+      const foodsorted = await foodcol1.find().sort({ "capability": -1 }).toArray();
       res.send(foodsorted)
     })
     app.post('/test', (req, res) => {
@@ -138,3 +295,79 @@ async function run() {
 }
 
 run().catch(console.dir);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // app.get('/testget', async (req, res) => {
+    //   const query = await foodcol1.find().toArray();
+    //   res.send(query);
+    // });
+//     app.delete('/deletefood/:id', async (req, res) => {
+//   const foodid = req.params.id;
+
+//   const query = { _id: new ObjectId(foodid) };
+//   const result = await foodslist1.deleteOne(query);
+
+//   res.send(result);
+// });
+
+//     app.patch('/editfood/:id', async (req, res) => {
+//   const foodid = req.params.id;
+//   const updatedData = req.body;
+
+
+//   const query = { _id: new ObjectId(foodid) };
+//   const updateDoc = {
+//     $set: {
+
+
+//     title: updatedData.title,
+//     imgurl: updatedData.imgurl,
+//     capability: updatedData.capability,
+//     pickupLocation: updatedData.pickupLocation,
+//     expireDate: updatedData.expireDate,
+//     description: updatedData.description,
+//     contributorPhotoURL: updatedData.contributorPhotoURL,
+//     email: updatedData.email,
+//     contributor: updatedData.contributor,
+//     status: updatedData.status,
+//   }}
+
+//   const result = await foodslist1.updateOne(query, updateDoc);
+//   res.send(result);
+// });
