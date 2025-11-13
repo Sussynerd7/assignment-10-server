@@ -52,7 +52,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     const db = client.db('cfs-assignment-10')
     const foodlistfinal = db.collection("Foodlistfinal")
     // const foodrequestsfinal = db.collection("requested")
@@ -68,21 +68,23 @@ async function run() {
 
     app.patch('/updaterequeststatus/:id', async (req, res) => {
       const requestId = req.params.id;
-      const { newStatus } = req.body;
+      const { status,newStatus } = req.body;
 
       if (!newStatus || (newStatus !== 'accepted' && newStatus !== 'rejected')) {
         return res.status(400).send({ success: false, message: 'Invalid status provided.' });
       }
-
+      
       const query = { _id: new ObjectId(requestId) };
       const updateDoc = {
         $set: {
           reqstatus: newStatus
+          ,
+          status:status
         }
       };
 
       try {
-        const result = await foodrequestsfinal.updateOne(query, updateDoc);
+        const result = await foodlistfinal.updateOne(query, updateDoc);
 
         if (result.modifiedCount > 0) {
           res.send({ success: true, message: `Request status updated to ${newStatus}` });
@@ -141,7 +143,7 @@ async function run() {
       const query = { email: contributorEmail };
 
       try {
-        const requests = await foodrequestsfinal.find(query).toArray();
+        const requests = await foodlistfinal.find(query).toArray();
 
         res.send(requests);
       } catch (error) {
