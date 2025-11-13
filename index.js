@@ -19,12 +19,9 @@ const verifyFirebase = async (req, res, next) => {
 
 
   if (!token) {
-    return res.send({ message: "error with access" })
+    return res.send({ message: "error about access" })
   }
-  // try{
-  //   const userInfo= await admin.auth().verifyIdToken(token);
-  //   console.log(userInfo);
-  //   next();
+ 
   // }
   // catch{
   // return res.send({message: "error with access"})
@@ -61,7 +58,7 @@ async function run() {
     // const foodrequestsfinal = db.collection("requested")
     const foodrequestsfinal = db.collection("requestedfinal")
     const foodslist = db.collection("Foods")
-    const foodslist1 = db.collection("Foods-test-1")
+  
  
     console.log(" Successfully connected hoise to MongoDB!");
 
@@ -127,7 +124,7 @@ async function run() {
 
       const finalize = await foodrequestsfinal.insertOne(updatedfood);
 
-      res.send({ message: 'we are done' })
+      res.send({ message: 'we are done', })
       // .catch(err=>({message:'we are done'},err))
     });
     app.get('/allfoods', async (req, res) => {
@@ -169,48 +166,7 @@ async function run() {
       const result = await foodlistfinal.insertOne(newfood);
       res.send(result)
     });
-    //   app.patch('/testpatch/:id', async (req, res) => {
-
-
-    //   try {
-    //     const id = req.params.id;
-    //     const fupdate = req.body;
-
-    //     const query = { _id: new ObjectId(id) };
-
-    //     const update = {
-    //       $set: {
-    //         title: fupdate.changedTitle,
-    //         imgurl: fupdate.changedImgurl,
-    //         expireDate: fupdate.changedExpireDate,
-    //         status: fupdate.changedStatus,
-    //         capability: fupdate.changedCapability,
-    //         contributor: fupdate.changedContributor,
-    //         email: fupdate.changedEmail,
-    //         pickupLocation: fupdate.changedPickupLocation,
-    //         available: fupdate.changedAvailable
-    //       }
-    //     };
-
-    //     const result = await foodlistfinal.updateOne(query, update);
-
-    //     if (result.modifiedCount > 0) {
-    //       res.send({ success: true, message: "Food item updated successfully." });
-    //     } else {
-    //       res.send({ success: false, message: "No changes made or item not found." });
-    //     }
-    //   } catch (err) {
-    //     console.error("Error updating food item:", err);
-    //     res.status(500).send({ success: false, message: "Server error during update." });
-    //   }
-    // });
-
-
-    //   const result = foodlistfinal.updateOne(query,update);
-
-    //   res.send(result)
-    // });
-
+    
 
 
 
