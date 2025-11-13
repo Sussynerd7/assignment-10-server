@@ -40,7 +40,7 @@ const verifyFirebase = async (req, res, next) => {
 //   credential: admin.credential.cert(serviceAccount)
 // });
 
-/
+
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@server1.qmz0oye.mongodb.net/?appName=server1`;
 
