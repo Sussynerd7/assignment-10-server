@@ -40,7 +40,7 @@ const verifyFirebase = async (req, res, next) => {
 //   credential: admin.credential.cert(serviceAccount)
 // });
 
-//  const uri = "mongodb+srv://sifatforpc999:sifatforpc999@server1.qmz0oye.mongodb.net/?appName=server1";
+/
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@server1.qmz0oye.mongodb.net/?appName=server1`;
 
@@ -62,7 +62,7 @@ async function run() {
     const foodrequestsfinal = db.collection("requestedfinal")
     const foodslist = db.collection("Foods")
     const foodslist1 = db.collection("Foods-test-1")
-    const foodslist2 = db.collection("Foods-test-2")
+ 
     console.log(" Successfully connected hoise to MongoDB!");
 
     app.get('/', (req, res) => {
